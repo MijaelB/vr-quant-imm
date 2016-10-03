@@ -63,6 +63,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Scripts\FPSCamera.cs" />
+    <Compile Include="Assets\Scripts\LetterGenerator.cs" />
+    <Compile Include="Assets\Scripts\VRMouseLook.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Modern Interior Pack\Shaders\Glass.shader" />
