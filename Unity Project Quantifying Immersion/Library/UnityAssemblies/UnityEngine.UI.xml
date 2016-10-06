@@ -60,9 +60,95 @@
       </summary>
       <param name="eventSystem"></param>
     </member>
+    <member name="T:UnityEngine.EventSystems.BaseInput">
+      <summary>
+        <para>Interface to the Input system used by the BaseInputModule. With this it is possible to bypass the Input system with your own but still use the same InputModule. For example this can be used to feed fake input into the UI or interface with a different input system.</para>
+      </summary>
+    </member>
+    <member name="P:UnityEngine.EventSystems.BaseInput.compositionCursorPos">
+      <summary>
+        <para>Interface to Input.compositionCursorPos. Can be overridden to provide custom input instead of using the Input class.</para>
+      </summary>
+    </member>
+    <member name="P:UnityEngine.EventSystems.BaseInput.compositionString">
+      <summary>
+        <para>Interface to Input.compositionString. Can be overridden to provide custom input instead of using the Input class.</para>
+      </summary>
+    </member>
+    <member name="P:UnityEngine.EventSystems.BaseInput.imeCompositionMode">
+      <summary>
+        <para>Interface to Input.imeCompositionMode. Can be overridden to provide custom input instead of using the Input class.</para>
+      </summary>
+    </member>
+    <member name="P:UnityEngine.EventSystems.BaseInput.mousePosition">
+      <summary>
+        <para>Interface to Input.mousePosition. Can be overridden to provide custom input instead of using the Input class.</para>
+      </summary>
+    </member>
+    <member name="P:UnityEngine.EventSystems.BaseInput.mousePresent">
+      <summary>
+        <para>Interface to Input.mousePresent. Can be overridden to provide custom input instead of using the Input class.</para>
+      </summary>
+    </member>
+    <member name="P:UnityEngine.EventSystems.BaseInput.mouseScrollDelta">
+      <summary>
+        <para>Interface to Input.mouseScrollDelta. Can be overridden to provide custom input instead of using the Input class.</para>
+      </summary>
+    </member>
+    <member name="P:UnityEngine.EventSystems.BaseInput.touchCount">
+      <summary>
+        <para>Interface to Input.touchCount. Can be overridden to provide custom input instead of using the Input class.</para>
+      </summary>
+    </member>
+    <member name="P:UnityEngine.EventSystems.BaseInput.touchSupported">
+      <summary>
+        <para>Interface to Input.touchSupported. Can be overridden to provide custom input instead of using the Input class.</para>
+      </summary>
+    </member>
+    <member name="M:UnityEngine.EventSystems.BaseInput.GetAxisRaw(System.String)">
+      <summary>
+        <para>Interface to Input.GetAxisRaw. Can be overridden to provide custom input instead of using the Input class.</para>
+      </summary>
+      <param name="axisName"></param>
+    </member>
+    <member name="M:UnityEngine.EventSystems.BaseInput.GetButtonDown(System.String)">
+      <summary>
+        <para>Interface to Input.GetButtonDown. Can be overridden to provide custom input instead of using the Input class.</para>
+      </summary>
+      <param name="buttonName"></param>
+    </member>
+    <member name="M:UnityEngine.EventSystems.BaseInput.GetMouseButton(System.Int32)">
+      <summary>
+        <para>Interface to Input.GetMouseButton. Can be overridden to provide custom input instead of using the Input class.</para>
+      </summary>
+      <param name="button"></param>
+    </member>
+    <member name="M:UnityEngine.EventSystems.BaseInput.GetMouseButtonDown(System.Int32)">
+      <summary>
+        <para>Interface to Input.GetMouseButtonDown. Can be overridden to provide custom input instead of using the Input class.</para>
+      </summary>
+      <param name="button"></param>
+    </member>
+    <member name="M:UnityEngine.EventSystems.BaseInput.GetMouseButtonUp(System.Int32)">
+      <summary>
+        <para>Interface to Input.GetMouseButtonUp. Can be overridden to provide custom input instead of using the Input class.</para>
+      </summary>
+      <param name="button"></param>
+    </member>
+    <member name="M:UnityEngine.EventSystems.BaseInput.GetTouch(System.Int32)">
+      <summary>
+        <para>Interface to Input.GetTouch. Can be overridden to provide custom input instead of using the Input class.</para>
+      </summary>
+      <param name="index"></param>
+    </member>
     <member name="T:UnityEngine.EventSystems.BaseInputModule">
       <summary>
         <para>A base module that raises events and sends them to GameObjects.</para>
+      </summary>
+    </member>
+    <member name="P:UnityEngine.EventSystems.BaseInputModule.input">
+      <summary>
+        <para>The current BaseInput being used by the input module.</para>
       </summary>
     </member>
     <member name="M:UnityEngine.EventSystems.BaseInputModule.ActivateModule">
@@ -141,6 +227,11 @@
     <member name="M:UnityEngine.EventSystems.BaseInputModule.OnDisable">
       <summary>
         <para>See MonoBehaviour.OnDisable.</para>
+      </summary>
+    </member>
+    <member name="M:UnityEngine.EventSystems.BaseInputModule.OnEnable">
+      <summary>
+        <para>See MonoBehaviour.OnEnable.</para>
       </summary>
     </member>
     <member name="M:UnityEngine.EventSystems.BaseInputModule.Process">
@@ -1226,7 +1317,7 @@
     </member>
     <member name="T:UnityEngine.EventSystems.RaycastResult">
       <summary>
-        <para>A hit result from a BaseRaycastModule.</para>
+        <para>A hit result from a BaseRaycaster.</para>
       </summary>
     </member>
     <member name="F:UnityEngine.EventSystems.RaycastResult.depth">
@@ -2641,14 +2732,14 @@ If you have modified the list of options, you should call this method afterwards
         <para>Callback function when a UI element needs to generate vertices.</para>
       </summary>
       <param name="m">Mesh to populate with UI data.</param>
-      <param name="vh"></param>
+      <param name="vh">VertexHelper utility.</param>
     </member>
     <member name="M:UnityEngine.UI.Graphic.OnPopulateMesh(UnityEngine.UI.VertexHelper)">
       <summary>
         <para>Callback function when a UI element needs to generate vertices.</para>
       </summary>
       <param name="m">Mesh to populate with UI data.</param>
-      <param name="vh"></param>
+      <param name="vh">VertexHelper utility.</param>
     </member>
     <member name="M:UnityEngine.UI.Graphic.OnRebuildRequested">
       <summary>
@@ -2666,7 +2757,7 @@ If you have modified the list of options, you should call this method afterwards
     </member>
     <member name="M:UnityEngine.UI.Graphic.Raycast(UnityEngine.Vector2,UnityEngine.Camera)">
       <summary>
-        <para>When a GraphicRaycaster is raycasting into the scene it will first filter the elments using their RectTransform rect and then it will use this function to determine the elements hit mby the raycast.</para>
+        <para>When a GraphicRaycaster is raycasting into the scene it will first filter the elments using their RectTransform rect and then it will use this function to determine the elements hit by the raycast.</para>
       </summary>
       <param name="sp">Screen point.</param>
       <param name="eventCamera">Camera.</param>
@@ -3064,6 +3155,11 @@ Used if the native representation has been destroyed.</para>
         <para>Interface for elements that can be clipped if they are under an [[IClipper].</para>
       </summary>
     </member>
+    <member name="P:UnityEngine.UI.IClippable.gameObject">
+      <summary>
+        <para>GameObject of the IClippable.</para>
+      </summary>
+    </member>
     <member name="P:UnityEngine.UI.IClippable.rectTransform">
       <summary>
         <para>RectTransform of the clippable.</para>
@@ -3188,9 +3284,19 @@ Used if the native representation has been destroyed.</para>
         <para>Displays a Sprite for the UI System.</para>
       </summary>
     </member>
+    <member name="P:UnityEngine.UI.Image.alphaHitTestMinimumThreshold">
+      <summary>
+        <para>The alpha threshold specifies the minimum alpha a pixel must have for the event to considered a "hit" on the Image.</para>
+      </summary>
+    </member>
+    <member name="P:UnityEngine.UI.Image.defaultETC1GraphicMaterial">
+      <summary>
+        <para>Cache of the default Cavas ETC1 + alpha material.</para>
+      </summary>
+    </member>
     <member name="P:UnityEngine.UI.Image.eventAlphaThreshold">
       <summary>
-        <para>The alpha threshold specifying the minimum alpha a pixel must have for the event to be passed through.</para>
+        <para>The alpha threshold specifies the minimum alpha a pixel must have for the event to considered a "hit" on the Image.</para>
       </summary>
     </member>
     <member name="P:UnityEngine.UI.Image.fillAmount">
@@ -3241,6 +3347,11 @@ Used if the native representation has been destroyed.</para>
     <member name="P:UnityEngine.UI.Image.mainTexture">
       <summary>
         <para>The image's texture. (ReadOnly).</para>
+      </summary>
+    </member>
+    <member name="P:UnityEngine.UI.Image.material">
+      <summary>
+        <para>The material used by this Image. If a material is specified it is used, otherwise the default material is used.</para>
       </summary>
     </member>
     <member name="P:UnityEngine.UI.Image.minHeight">
@@ -3627,7 +3738,8 @@ Used if the native representation has been destroyed.</para>
     </member>
     <member name="P:UnityEngine.UI.InputField.placeholder">
       <summary>
-        <para>Optional graphic to show when the InputField text is empty.
+        <para>This is an optional ‘empty’ graphic to show that the InputField text field is empty. Note that this ‘empty' graphic still displays even when the InputField is selected (that is; when there is focus on it).
+
 A placeholder graphic can be used to show subtle hints or make it more obvious that the control is an InputField.</para>
       </summary>
     </member>
@@ -4406,7 +4518,7 @@ Characters 0-9, . (dot), and - (dash / minus sign) are allowed. The dash is only
     </member>
     <member name="T:UnityEngine.UI.MaskableGraphic">
       <summary>
-        <para>A Graphic that is capable of being mased out.</para>
+        <para>A Graphic that is capable of being masked out.</para>
       </summary>
     </member>
     <member name="P:UnityEngine.UI.MaskableGraphic.maskable">
@@ -4478,6 +4590,7 @@ Characters 0-9, . (dot), and - (dash / minus sign) are allowed. The dash is only
         <para>Find the correct RectMask2D for a given IClippable.</para>
       </summary>
       <param name="transform">Clippable to search from.</param>
+      <param name="clippable"></param>
     </member>
     <member name="M:UnityEngine.UI.MaskUtilities.GetRectMasksForClip(UnityEngine.UI.RectMask2D,System.Collections.Generic.List`1&lt;UnityEngine.UI.RectMask2D&gt;)">
       <summary>
@@ -4492,6 +4605,16 @@ Characters 0-9, . (dot), and - (dash / minus sign) are allowed. The dash is only
       </summary>
       <param name="transform"></param>
       <param name="stopAfter"></param>
+    </member>
+    <member name="M:UnityEngine.UI.MaskUtilities.IsDescendantOrSelf(UnityEngine.Transform,UnityEngine.Transform)">
+      <summary>
+        <para>Helper function to determine if the child is a descendant of father or is father.</para>
+      </summary>
+      <param name="father">The transform to compare against.</param>
+      <param name="child">The starting transform to search up the hierarchy.</param>
+      <returns>
+        <para>Is child equal to father or is a descendant.</para>
+      </returns>
     </member>
     <member name="M:UnityEngine.UI.MaskUtilities.Notify2DMaskStateChanged(UnityEngine.Component)">
       <summary>
@@ -4681,7 +4804,7 @@ Characters 0-9, . (dot), and - (dash / minus sign) are allowed. The dash is only
     </member>
     <member name="M:UnityEngine.UI.Scrollbar.ClickRepeat(UnityEngine.EventSystems.PointerEventData)">
       <summary>
-        <para>Coroutine function for handling continual press during OnPointerDown.</para>
+        <para>Coroutine function for handling continual press during Scrollbar.OnPointerDown.</para>
       </summary>
       <param name="eventData"></param>
     </member>
@@ -4766,6 +4889,18 @@ Characters 0-9, . (dot), and - (dash / minus sign) are allowed. The dash is only
     <member name="M:UnityEngine.UI.Scrollbar.OnMove(UnityEngine.EventSystems.AxisEventData)">
       <summary>
         <para>Handling for movement events.</para>
+      </summary>
+      <param name="eventData"></param>
+    </member>
+    <member name="M:UnityEngine.UI.Scrollbar.OnPointerDown(UnityEngine.EventSystems.PointerEventData)">
+      <summary>
+        <para>Event triggered when pointer is pressed down on the scrollbar.</para>
+      </summary>
+      <param name="eventData"></param>
+    </member>
+    <member name="M:UnityEngine.UI.Scrollbar.OnPointerUp(UnityEngine.EventSystems.PointerEventData)">
+      <summary>
+        <para>Event triggered when pointer is released after pressing on the scrollbar.</para>
       </summary>
       <param name="eventData"></param>
     </member>

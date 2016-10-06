@@ -11,7 +11,7 @@ public class LetterGenerator : MonoBehaviour {
 
     // Game Objects assigned in the editor
     public GameObject letterPrefab;
-
+   
     // Room Walls, Ceil and Ground
     public GameObject doorGO;
     public GameObject leftWallGO;
@@ -20,6 +20,9 @@ public class LetterGenerator : MonoBehaviour {
     public GameObject frontWallGO;
     public GameObject ceilGO;
     public GameObject groundGO;
+
+    // Canvas for FOV
+    public Canvas FOVCanvas;
 
     // Left Margin of the letters at the walls
     public float leftMargin = 0.833f;
@@ -54,8 +57,8 @@ public class LetterGenerator : MonoBehaviour {
     public float task2LetterAppearPercentage = 50;
 
     // The FOV size
-    public float FOVWidth = 50;
-    public float FOVHeight = 50;
+    //public float FOVWidth = 50;
+    //public float FOVHeight = 50;
 
     /// =========================================================
     /// ============= PRIVATE PROPERTIES ========================
@@ -96,6 +99,7 @@ public class LetterGenerator : MonoBehaviour {
         // Select default set of letters
         selectedSet = letters_set1;
 
+        FOVCanvas.enabled = false;
         /// Instructions
         Debug.Log("Press 'T' to start Task Mode");
         Debug.Log("Press 'Space' to do task example");
@@ -301,7 +305,7 @@ public class LetterGenerator : MonoBehaviour {
         // if the F is pressed then change FOV
         if (Input.GetKeyDown(KeyCode.F))
         {
-            Camera.main.fieldOfView = 100.0f;
+            FOVCanvas.enabled = !FOVCanvas.enabled;
         }
     }
 
