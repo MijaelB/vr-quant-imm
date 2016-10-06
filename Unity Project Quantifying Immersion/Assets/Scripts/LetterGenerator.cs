@@ -1,164 +1,761 @@
 ﻿using UnityEngine;
-using System.Collections;
+using UnityEditor;
 using System.Collections.Generic;
 
 public class LetterGenerator : MonoBehaviour {
 
-    public enum Wall { Left, Right, Back, Front, Bottom, Top };
+    /// =========================================================
+    /// ============= PUBLIC PROPERTIES =========================
+    /// =========================================================
+    public enum Wall { Left, Right, Back, Front};
 
+    // Game Objects assigned in the editor
     public GameObject letterPrefab;
+   
+    // Room Walls, Ceil and Ground
     public GameObject doorGO;
     public GameObject leftWallGO;
     public GameObject rightWallGO;
     public GameObject backWallGO;
     public GameObject frontWallGO;
-    public GameObject topWallGO;
-    public GameObject bottomWallGO;
+    public GameObject ceilGO;
+    public GameObject groundGO;
 
+    // Canvas for FOV
+    public Canvas FOVCanvas;
+
+    // Left Margin of the letters at the walls
     public float leftMargin = 0.833f;
+
+    // Top Margin of the letters at the walls
     public float topMargin = 0.76f;
+
+    // Vertical Space between letters
     public float lineSpace = 1.273f;
+
+    // Horizontal Space between letters
     public float letterSpace = 1.273f;
 
-    public float charWallColumns = 6;
-    public float charWallRows = 6;
+    // Letter Space in the Circles
+    public float letterSpaceCircle = 1.25f;
 
+    // Number of letters per columns and rows at the walls
+    public float lettersWallColumns = 6;
+    public float lettersWallRows = 6;
+
+    // The default camouflaged color
+    public Color unCamouflagedLetterColor = Color.red;
+
+    // The default letter color
+    public Color normalLetterColor = Color.black;
+
+    // The number of times task 1 and task 2 repeats
+    public int task1Repetitions = 5;
+    public int task2Repetitions = 10;
+
+    // The percentage the letter appears
+    public float task2LetterAppearPercentage = 50;
+
+    // The FOV size
+    //public float FOVWidth = 50;
+    //public float FOVHeight = 50;
+
+    /// =========================================================
+    /// ============= PRIVATE PROPERTIES ========================
+    /// =========================================================
+    
+    // List of created letters
     private List<GameObject> letters = new List<GameObject>();
 
-    private GameObject letterStartGO;
-    private TextMesh letterText;
+    private GameObject letterDoor;
 
     private char[] letters_set1 = {'A', 'K', 'M', 'N', 'V', 'W', 'X', 'Y', 'Z' };
     private char[] letters_set2 = {'E', 'F', 'H', 'I', 'L', 'T'};
 
+    private int letterCount = 0;
 
+    private bool isLettersCreated = false;
+    private bool isLetterShownAtDoor = false;
+    private bool isCamouflaged = true;
+    private bool isTaskMode = false;
+    private bool isAppearing = true;
+
+    private int currentTask = 0;
+    private int taskCount = 0;
+
+    private char[] selectedSet;
+
+    private char letter;
+
+    private bool[] appear;
+
+    /// =========================================================
+    /// ============= UNITY METHODS =============================
+    /// =========================================================
+    
     // Use this for initialization
     void Start () {
 
-        // Test
-        // Character on the Door
-        GameObject letter = Instantiate(letterPrefab, doorGO.transform.position, doorGO.transform.rotation) as GameObject;
+        // Select default set of letters
+        selectedSet = letters_set1;
 
-        letterText = letter.GetComponent<TextMesh>();
-        letterText.text = generateRandomLetter(1).ToString();
-
-        // Character on the LeftWall
-
-        generateRandomLettersAtWall(Wall.Left, new int[] { 1, 2 });
-        generateRandomLettersAtWall(Wall.Right, new int[] { 1, 2 });
-        generateRandomLettersAtWall(Wall.Front, new int[] { 1, 2 });
-        generateRandomLettersAtWall(Wall.Back, new int[] { 1, 2 });
-    }
-	
-	// Update is called once per frame
-	void Update () {
-	    
-	}
-
-    public void showHidenLetterAtDoor(char hiden)
-    {
-
+        FOVCanvas.enabled = false;
+        /// Instructions
+        /// 
+        /// ---- Log ----
+        Debug.Log("Press 'T' to start Task Mode");
+        Debug.Log("Press 'Space' to do task example");
+        Debug.Log("Press 'C' to camouflage letter");
+        Debug.Log("Press 'S' to change the current set of letters");
+        Debug.Log("Press 'F' to change the FOV size");
+        Debug.Log("Press 'A' to change letter to appear");
+        /// ---- Log ----
     }
 
-    public void generateRandomLetters(char hiden)
-    {
+    // Update is called once per frame
+    void Update () {
+        changeTaskModeInput();
 
+        changeCamouflagedInput();
+
+        changeSetInput();
+
+        changeFOVInput();
+
+        changeAppearingInput();
+
+        startTaskInput();
     }
 
-    private void generateRandomLettersAtWall(Wall wall, int[] ignore)
+    /// =========================================================
+    /// ============= KEYBOARD INPUT METHODS ====================
+    /// =========================================================
+   
+    // Select Task Mode 'T'
+    public void changeTaskModeInput()
     {
-
-        Vector3 startPosition;
-        Quaternion rotation;
-
-        switch (wall)
+        // If T key pressed, activate or desactivate Task Mode!
+        // Task Mode is where the experiment starts 
+        if (Input.GetKeyDown(KeyCode.T))
         {
-            case Wall.Left:
-                startPosition = new Vector3(leftWallGO.transform.position.x,
-                                               leftWallGO.transform.position.y + leftWallGO.transform.lossyScale.y * 5 - topMargin,
-                                               leftWallGO.transform.position.z - leftWallGO.transform.lossyScale.z * 5 + leftMargin);
-                rotation = Quaternion.Euler(0, -90, 0);
-                break;
-            case Wall.Right:
-                startPosition = new Vector3(rightWallGO.transform.position.x,
-                                            rightWallGO.transform.position.y + rightWallGO.transform.lossyScale.y * 5 - topMargin,
-                                            rightWallGO.transform.position.z + rightWallGO.transform.lossyScale.z * 5 - leftMargin);
-                rotation = Quaternion.Euler(0, 90, 0);
-                break;
-            case Wall.Back:
-                startPosition = new Vector3(backWallGO.transform.position.x + backWallGO.transform.lossyScale.z * 5 - leftMargin,
-                                            backWallGO.transform.position.y + backWallGO.transform.lossyScale.y * 5 - topMargin,
-                                            backWallGO.transform.position.z);
-                rotation = Quaternion.Euler(0, 180, 0);
-                break;
-            case Wall.Front:
-                startPosition = new Vector3(frontWallGO.transform.position.x - frontWallGO.transform.lossyScale.z * 5 + leftMargin,
-                                            frontWallGO.transform.position.y + frontWallGO.transform.lossyScale.y * 5 - topMargin,
-                                            frontWallGO.transform.position.z);
-                rotation = Quaternion.Euler(0, 0, 0);
-                break;
-            default:
-                startPosition = new Vector3(leftWallGO.transform.position.x,
-                                            leftWallGO.transform.position.y + leftWallGO.transform.lossyScale.y * 5 - topMargin,
-                                            leftWallGO.transform.position.z + leftWallGO.transform.lossyScale.z * 5 - leftMargin);
-                rotation = Quaternion.Euler(0, 90, 0);
-                break;
-        }
-     
-        int letterCount = 0;
-        for (int i = 0; i < charWallColumns; i++)
-        {
-            for (int j = 0; j < charWallRows; j++)
+            // Remove all reset all
+            removeLetterAtDoor();
+            removeAllLetters();
+
+            isTaskMode = !isTaskMode;
+
+            if (!isTaskMode)
             {
-                Vector3 letterPosition;
-                switch (wall)
+                // The task is disabled so
+                // There is not task running
+                currentTask = 0;
+
+                // The letters are appearing
+                isAppearing = true;
+
+                /// ---- Log ----
+                Debug.Log("Task Disabled");
+
+                /// ---- Log ----
+                Debug.Log("Press 'T' to start Task Mode");
+                Debug.Log("Press 'Space' to do task example");
+                Debug.Log("Press 'C' to camouflage letter");
+                Debug.Log("Press 'S' to change the current set of letters");
+                Debug.Log("Press 'F' to change the FOV size");
+                Debug.Log("Press 'A' to change letter to appear");
+                /// ---- Log ----
+            }
+            else
+            {
+                /// ---- Log ----
+                Debug.Log("Task Enabled");
+                Debug.Log("Press 1 or 2 to Choose Task");
+                Debug.Log("Task 1: Pilot experiment with non-camouflaged letter, repeated " + task1Repetitions + " times");
+                Debug.Log("Task 2: Experiment with camouflaged letters, appearing and not appearing, repeated " + task2Repetitions + " times");
+                /// ---- Log ----
+            }
+        }
+
+        // If Key 1 pressed and Task Mode on then start Pilot Experiment
+        if (Input.GetKeyDown(KeyCode.Alpha1) && isTaskMode)
+        {
+            // Remove all reset all
+            removeLetterAtDoor();
+            removeAllLetters();
+
+            // Task Settings
+            currentTask = 1;
+
+            // Task number of repetitions
+            taskCount = task1Repetitions;
+
+            // The letter is not camouflaged
+            isCamouflaged = false;
+
+            Debug.Log("Task 1 Selected: Not Camouflaged Letters");
+        }
+
+        // If Key 2 pressed and Task Mode On then start Experiment 2 
+        if (Input.GetKeyDown(KeyCode.Alpha2) && isTaskMode)
+        {
+            // Remove all reset all
+            removeLetterAtDoor();
+            removeAllLetters();
+
+            // Task Settings
+            currentTask = 2;
+
+            // Task number of repetitions
+            taskCount = task2Repetitions;
+
+            // Letters are camouflaged
+            isCamouflaged = true;
+
+            // Fill the values for appear the experiment 2 
+            fillAppearValues(task2Repetitions, task2LetterAppearPercentage);
+
+            Debug.Log("Task 2 Selected: Camouflaged Letters " + task2LetterAppearPercentage + "%");
+        }
+    }
+
+    // Select Camouflaged or not 'C' Key
+    public void changeCamouflagedInput()
+    {
+        // Camouflaged freely if it is not a task mode
+        if (Input.GetKeyDown(KeyCode.C) && !isTaskMode)
+        {
+            isCamouflaged = !isCamouflaged;
+
+            /// ---- Log ----
+            Debug.Log("Letter Camouflaged:" + isCamouflaged);
+            /// ---- Log ----
+        }
+    }
+
+    // Select the set of letters
+    public void changeSetInput()
+    {
+        // If Key S pressed then change the current set of letters
+        if (Input.GetKeyDown(KeyCode.S))
+        {
+            // Switch letters set
+            if (selectedSet.Equals(letters_set1))
+                selectedSet = letters_set2;
+            else
+                selectedSet = letters_set1;
+
+
+            /// ---- Log ----
+            System.Text.StringBuilder sb = new System.Text.StringBuilder("", 50);
+            sb.Append(selectedSet);
+            Debug.Log("Selected Set: " + sb.ToString());
+            /// ---- Log ----
+        }
+    }
+
+    // Start Task 'SPACE' Key
+    public void startTaskInput()
+    {
+        // If Key space is pressed then do the different actions for task a non-task
+        if (Input.GetKeyDown("space") && (!isTaskMode || (taskCount != 0 && isTaskMode)))
+        {
+            // The letter is already created?
+            if (isLettersCreated)
+            {
+                // If it is a task mode
+                if (isTaskMode)
                 {
-                    case Wall.Left:
-                        letterPosition = new Vector3(startPosition.x,
-                                                     startPosition.y - j * lineSpace,
-                                                     startPosition.z + i * letterSpace);
-                        break;
-                    case Wall.Right:
-                        letterPosition = new Vector3(startPosition.x,
-                                                     startPosition.y - j * lineSpace,
-                                                     startPosition.z - i * letterSpace);
-                        break;
-                    case Wall.Back:
-                        letterPosition = new Vector3(startPosition.x - i * letterSpace,
-                                                     startPosition.y - j * lineSpace,
-                                                     startPosition.z);
-                        break;
-                    case Wall.Front:
-                        letterPosition = new Vector3(startPosition.x + i * letterSpace,
-                                                     startPosition.y - j * lineSpace,
-                                                     startPosition.z);
-                        break;
-                    default:
-                        letterPosition = new Vector3(startPosition.x,
-                                                    startPosition.y - j * lineSpace,
-                                                    startPosition.z - i * letterSpace);
-                        break;
+                    if (taskCount > 0)
+                    {
+                        // Then decrease task count
+                        Debug.Log("Task Iteration " + taskCount + " Finished");
+                        taskCount--;
+                    }
+                    else
+                    {
+                        // Task finished!
+                        currentTask = 0;
+                        isAppearing = true;
+                        isTaskMode = false;
+
+                        /// ---- Log ----
+                        Debug.Log("Task Finished!!");
+                        /// ---- Log ----
+                    }
                 }
 
-                GameObject letter = Instantiate(letterPrefab, letterPosition, rotation) as GameObject;
-                letter.GetComponent<TextMesh>().text = generateRandomLetter(1).ToString();
+                // Remove letters to start again or stop
+                removeAllLetters();
+            }
+            else
+            {
+                // Is Letter Shown At door?
+                if (!isLetterShownAtDoor)
+                {
+                    // If not then generate a new letter for the task from the selectedSet
+                    letter = generateRandomLetter(selectedSet);
 
-                letters.Add(letter);
+                    // Appear the letter at the door
+                    showLetterAtDoor(letter, isCamouflaged);
+                }
+                else
+                {
 
-                letterCount++;
+                    // Remove letter at the door
+                    removeLetterAtDoor();
+
+                    if (isTaskMode)
+                    {
+                        if (currentTask == 2)
+                            isAppearing = appear[taskCount - 1];
+                        else
+                            isAppearing = true;
+
+                        /// ---- Log ----
+                        Debug.Log("Task: " + taskCount);
+                        Debug.Log("Is Letter Appearing: " + isAppearing);
+                        /// ---- Log ----
+                    }
+
+                    // Generate all letters at the room
+                    generateRandomLetters(letter, isCamouflaged, isAppearing, selectedSet);
+                }
             }
         }
     }
 
-    
-
-
-    private char generateRandomLetter(int set)
+    // Change FOV 'F' Key
+    public void changeFOVInput()
     {
-        if (set == 1)
-            return letters_set1[Random.Range(0, letters_set1.Length - 1)];
+        // if the F is pressed then change FOV
+        if (Input.GetKeyDown(KeyCode.F))
+        {
+            FOVCanvas.enabled = !FOVCanvas.enabled;
 
-        return letters_set2[Random.Range(0, letters_set2.Length - 1)];
+            /// ---- Log ----
+            Debug.Log("FOV Is: " + (FOVCanvas.enabled ? "Enabled" : "Disabled"));
+            /// ---- Log ----
+        }
+    }
+
+    // Change Appearing 'A' Key
+    public void changeAppearingInput()
+    {
+        // if the F is pressed then change FOV
+        if (Input.GetKeyDown(KeyCode.A))
+        {
+            isAppearing = !isAppearing;
+
+            /// ---- Log ----
+            Debug.Log("Appearing Is: " + (isAppearing ? "Enabled" : "Disabled"));
+            /// ---- Log ----
+        }
+    }
+
+
+    /// =========================================================
+    /// ============= LETTERS GENERATOR METHODS =================
+    /// =========================================================
+    /// <summary>
+    /// Show Letter to test at door to show it to user
+    /// </summary>
+    /// <param name="letter">The letter to show</param>
+    /// <param name="camouflaged">If it has to be camouflaged or not</param>
+    public void showLetterAtDoor(char letter, bool camouflaged)
+    {
+        // Instantiate the letter prefab and put it on the door
+        letterDoor = Instantiate(letterPrefab, doorGO.transform.position, doorGO.transform.rotation) as GameObject;
+        TextMesh letterDoorText = letterDoor.GetComponent<TextMesh>();
+
+        // If the door is not camouflaged then change of color
+        if (!camouflaged)
+            letterDoorText.color = unCamouflagedLetterColor;
+
+        // Change the text to the desired letter
+        letterDoorText.text = letter.ToString();
+
+        // The letter is shown at the door
+        isLetterShownAtDoor = true;
+    }
+
+
+    /// <summary>
+    /// Generate random letters at walls, ceil and at ground
+    /// </summary>
+    /// <param name="letter"></param>
+    /// <param name="camouflaged"></param>
+    /// <param name="appear"></param>
+    /// <param name="set"></param>
+    public void generateRandomLetters(char letter, bool camouflaged, bool appear, char[] set)
+    {
+        int position = generateRandomNumber(0, 171);
+
+        generateRandomLettersAtWall(Wall.Left, letter, position, camouflaged, appear, set, new int[] { 11, 10 });
+        generateRandomLettersAtWall(Wall.Right, letter, position, camouflaged, appear, set, new int[] { 28, 29 });
+        generateRandomLettersAtWall(Wall.Front, letter, position, camouflaged, appear, set, new int[] { 22, 23, 24, 28, 29, 30 });
+        generateRandomLettersAtWall(Wall.Back, letter, position, camouflaged, appear, set, new int[] { -1 });
+        generateRandomLettersAtCeil(letter, position, camouflaged, appear, set);
+        generateRandomLettersAtGround(letter, position, camouflaged, appear, set);
+
+        isLettersCreated = true;
+        Debug.Log(letterCount + " letters Created!");
+    }
+
+
+    /// <summary>
+    /// Generate random letters at the specified wall
+    /// </summary>
+    /// <param name="wall">Use the Enum Wall to select a specific wall</param>
+    /// <param name="letter">The letter that we want to hide around the letters</param>
+    /// <param name="atPosition">The position where we want to hide the letter, this could be a random position from 0 to 171</param>
+    /// <param name="camouflaged">The letter should be camouflaged?</param>
+    /// <param name="appear">The letter should appear?</param>
+    /// <param name="set">The set of the letters</param>
+    /// <param name="ignore">The letters ignored to appear depending of location</param>
+    private void generateRandomLettersAtWall(Wall wall, char letter, int atPosition, bool camouflaged, bool appear, char[] set, int[] ignore)
+    {
+        // Get the corner top-left start position for the letters
+        Vector3 startPosition = getLetterStartPositionAtWall(wall);
+
+        // Get the rotation for the current letter determined by the normal of the wall
+        Quaternion rotation = getLetterRotationAtWall(wall);
+
+        int letterCountPerWall = 0;
+        for (int i = 0; i < lettersWallColumns; i++)
+        {
+            for (int j = 0; j < lettersWallRows; j++)
+            {
+                // Check if the current character should be ignored because probably there is a window or a door over it
+                if (!UnityEditor.ArrayUtility.Contains<int>(ignore, letterCountPerWall + 1))
+                {
+                    // Calculate the new letter position
+                    Vector3 letterPosition = getNewLetterPositionAtWall(wall, startPosition, i, j);
+
+                    // Create and Save letter in the list
+                    letters.Add(createNewLetter(letterPosition, rotation, letter, atPosition, camouflaged, appear, set));
+                }
+
+                // Increment count of letters for this specific wall
+                letterCountPerWall++;
+            }
+        }
+    }
+
+
+    /// <summary>
+    /// Generate letters at ground
+    /// </summary>
+    /// <param name="letter">The letter that we want to hide around the letters</param>
+    /// <param name="atPosition">The position where we want to hide the letter, this could be a random position from 0 to 171</param>
+    /// <param name="camouflaged">The letter should be camouflaged?</param>
+    /// <param name="appear">The letter should appear?</param>
+    /// <param name="set">The set of the letters</param>
+    private void generateRandomLettersAtGround(char letter, int atPosition, bool camouflaged, bool appear, char[] set)
+    {
+        generateRandomLettersInACircle(11, groundGO.transform.position, Vector3.down, letter, atPosition, camouflaged, appear, set, new int[] { -1 });
+        generateRandomLettersInACircle(17, groundGO.transform.position, Vector3.down, letter, atPosition, camouflaged, appear, set, new int[] {1, 2, 4, 5, 6, 9, 10, 11, 13, 14, 15});
+    }
+
+
+    /// <summary>
+    /// Generate letters at the ceiling
+    /// </summary>
+    /// <param name="letter">The letter that we want to hide around the letters</param>
+    /// <param name="atPosition">The position where we want to hide the letter, this could be a random position from 0 to 171</param>
+    /// <param name="camouflaged">The letter should be camouflaged?</param>
+    /// <param name="appear">The letter should appear?</param>
+    /// <param name="set">The set of the letters</param>
+    private void generateRandomLettersAtCeil(char letter, int atPosition, bool camouflaged, bool appear, char[] set)
+    {
+        generateRandomLettersInACircle(11, ceilGO.transform.position, Vector3.up, letter, atPosition, camouflaged, appear, set, new int[] { -1 });
+        generateRandomLettersInACircle(17, ceilGO.transform.position, Vector3.up, letter, atPosition, camouflaged, appear, set, new int[] { 1, 2, 5, 6, 9, 10, 13, 14});
+    }
+
+
+    /// <summary>
+    /// Generate random letters in a circle
+    /// </summary>
+    /// <param name="numberOfLetters"></param>
+    /// <param name="center"></param>
+    /// <param name="upwards"></param>
+    /// <param name="letter"></param>
+    /// <param name="atPosition"></param>
+    /// <param name="camouflaged"></param>
+    /// <param name="appear"></param>
+    /// <param name="set"></param>
+    /// <param name="ignore"></param>
+    private void generateRandomLettersInACircle(int numberOfLetters, Vector3 center, Vector3 upwards, char letter, int atPosition, bool camouflaged, bool appear, char[] set, int[] ignore)
+    {
+        float circunference = letterSpaceCircle * numberOfLetters;
+        float radius = circunference / (2 * Mathf.PI);
+        float angleSpace = 2 * Mathf.PI * letterSpaceCircle / circunference;
+
+        for (int i = 0; i < numberOfLetters; i++)
+        {
+            if (!UnityEditor.ArrayUtility.Contains<int>(ignore, i + 1))
+            {
+                float x = radius * Mathf.Cos(angleSpace * i);
+                float y = radius * Mathf.Sin(angleSpace * i);
+
+                Vector3 position = new Vector3(x, 0.0f, y);
+                Vector3 lookPos = Vector3.zero;
+
+                if (upwards == Vector3.down)
+                    lookPos = new Vector3(-x, -100, -y);
+                else
+                    lookPos = new Vector3(x, 100, y);
+
+                Quaternion rotation = Quaternion.LookRotation(lookPos, upwards);
+
+
+                // Create and Save letter in the list
+                letters.Add(createNewLetter(center + position, rotation, letter, atPosition, camouflaged, appear, set));
+            }
+        }
+    }
+
+    /// <summary>
+    /// Simply get the new letter position depending of the Wall
+    /// </summary>
+    /// <param name="wall"></param>
+    /// <param name="startPosition"></param>
+    /// <param name="i"></param>
+    /// <param name="j"></param>
+    /// <returns></returns>
+    private Vector3 getNewLetterPositionAtWall(Wall wall, Vector3 startPosition, int i, int j)
+    {
+        switch (wall)
+        {
+            case Wall.Left:
+                return new Vector3(startPosition.x,
+                                   startPosition.y - j * lineSpace,
+                                   startPosition.z + i * letterSpace);
+            case Wall.Right:
+                return new Vector3(startPosition.x,
+                                   startPosition.y - j * lineSpace,
+                                   startPosition.z - i * letterSpace);
+            case Wall.Back:
+                return new Vector3(startPosition.x - i * letterSpace,
+                                   startPosition.y - j * lineSpace,
+                                   startPosition.z);
+            case Wall.Front:
+                return new Vector3(startPosition.x + i * letterSpace,
+                                   startPosition.y - j * lineSpace,
+                                   startPosition.z);
+            default:
+                return new Vector3(startPosition.x,
+                                   startPosition.y - j * lineSpace,
+                                   startPosition.z - i * letterSpace);
+        }
+    }
+
+    /// <summary>
+    /// Get letter rotation depending of the wall
+    /// </summary>
+    /// <param name="wall"></param>
+    /// <returns></returns>
+    private Quaternion getLetterRotationAtWall(Wall wall)
+    {
+        switch (wall)
+        {
+            case Wall.Left:
+                return Quaternion.Euler(0, -90, 0);
+            case Wall.Right:
+                return Quaternion.Euler(0, 90, 0);
+            case Wall.Back:
+                return Quaternion.Euler(0, 180, 0);
+            case Wall.Front:
+                return Quaternion.Euler(0, 0, 0);
+            default:
+                return Quaternion.Euler(0, 0, 0);
+        }
+    }
+
+    /// <summary>
+    /// Get the start position where we will iterate the letters at the certain wall
+    /// </summary>
+    /// <param name="wall"></param>
+    /// <returns></returns>
+    private Vector3 getLetterStartPositionAtWall(Wall wall)
+    {
+        switch (wall)
+        {
+            case Wall.Left:
+                return new Vector3(leftWallGO.transform.position.x,
+                                   leftWallGO.transform.position.y + leftWallGO.transform.lossyScale.y * 5 - topMargin,
+                                   leftWallGO.transform.position.z - leftWallGO.transform.lossyScale.z * 5 + leftMargin);
+            case Wall.Right:
+                return new Vector3(rightWallGO.transform.position.x,
+                                   rightWallGO.transform.position.y + rightWallGO.transform.lossyScale.y * 5 - topMargin,
+                                   rightWallGO.transform.position.z + rightWallGO.transform.lossyScale.z * 5 - leftMargin);
+            case Wall.Back:
+                return new Vector3(backWallGO.transform.position.x + backWallGO.transform.lossyScale.z * 5 - leftMargin,
+                                   backWallGO.transform.position.y + backWallGO.transform.lossyScale.y * 5 - topMargin,
+                                   backWallGO.transform.position.z);
+            case Wall.Front:
+                return new Vector3(frontWallGO.transform.position.x - frontWallGO.transform.lossyScale.z * 5 + leftMargin,
+                                   frontWallGO.transform.position.y + frontWallGO.transform.lossyScale.y * 5 - topMargin,
+                                   frontWallGO.transform.position.z);
+            default:
+                return new Vector3(leftWallGO.transform.position.x,
+                                   leftWallGO.transform.position.y + leftWallGO.transform.lossyScale.y * 5 - topMargin,
+                                   leftWallGO.transform.position.z + leftWallGO.transform.lossyScale.z * 5 - leftMargin);
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="position"></param>
+    /// <param name="rotation"></param>
+    /// <param name="letter"></param>
+    /// <param name="atPosition"></param>
+    /// <param name="camouflaged"></param>
+    /// <param name="appear"></param>
+    /// <param name="set"></param>
+    /// <returns></returns>
+    private GameObject createNewLetter(Vector3 position, Quaternion rotation, char letter, int atPosition, bool camouflaged, bool appear, char[] set)
+    {
+        // Instantiate the new letter in the desired position
+        GameObject letterGO = Instantiate(letterPrefab, position, rotation) as GameObject;
+
+        // If the count of letters is in the desired position for the hidden letter to appear, and if we want it to appear
+        // then continue
+        if (letterCount == atPosition && appear)
+        {
+            // Edit the text and write the letter we want
+            letterGO.GetComponent<TextMesh>().text = letter.ToString();
+
+            // If the letter is not camouflaged then 
+            if (!camouflaged)
+                letterGO.GetComponent<TextMesh>().color = unCamouflagedLetterColor;
+            else
+                letterGO.GetComponent<TextMesh>().color = normalLetterColor;
+        }
+        else
+            letterGO.GetComponent<TextMesh>().text = generateRandomLetter(set, letter).ToString();
+
+        // Count the total number of letters
+        letterCount++;
+
+        return letterGO;
+    }
+
+    /// <summary>
+    /// Generate a Random Letter without omitting
+    /// </summary>
+    /// <param name="set">The characters set</param>
+    /// <returns>A new generated random letter</returns>
+    private char generateRandomLetter(char[] set)
+    {
+        return set[(int)Mathf.Round(Random.Range(0.0f, (float)(set.Length - 1)))];
+    }
+
+    /// <summary>
+    /// Generate a Random Letter
+    /// </summary>
+    /// <param name="set">The characters set</param>
+    /// <param name="omit">The omitted character</param>
+    /// <returns>A new generated random letter</returns>
+    private char generateRandomLetter(char[] set, char omit)
+    {
+        char gen;
+        
+        // Generate a random letter, repeat if the generated character is the omitted one, this means that
+        // we want it to appear just once
+        do
+        {
+            gen = generateRandomLetter(set);
+
+        } while (omit == gen);
+
+        return gen;
+    }
+
+    /// <summary>
+    /// Generate random number from the range min to max.
+    /// </summary>
+    /// <param name="min">Minimum Integer</param>
+    /// <param name="max">Maximum Integer</param>
+    /// <returns>Random Integer</returns>
+    private int generateRandomNumber(int min, int max)
+    {
+        return Random.Range(min, max);
+    }
+
+    /// <summary>
+    /// TASK SPECIFIC: For the task where we want to appear the letter a fixed number of times 
+    /// in a random order.
+    /// </summary>
+    /// <param name="task_repetitions">The number of times the task is repeated</param>
+    /// <param name="percent">The percentage that the letter appear.</param>
+    private void fillAppearValues(int task_repetitions, float percent)
+    {
+        appear = new bool[task_repetitions];
+
+        // Calculate the number of time appear is true based on the specified percentage
+        int appear_repetitions = (int)Mathf.Round((float)task_repetitions * ((float)percent / 100.0f));
+
+        // Populate the appear array with true for appearing and false for not appearing
+        do
+        {
+            int i = 0;
+
+            // It should appear the number of times of appear_repetitions.
+            while(i < task_repetitions && appear_repetitions > 0)
+            {
+                // If the appear has a false value there
+                if (!appear[i])
+                {
+                    // fill in the appear value false or true randomly
+                    int b = Mathf.RoundToInt(Random.Range(0.0f, 1.0f));
+                    appear[i] = (b == 0 ? false : true);
+
+                    // If appear is true then substract 1 for the number of appear repetitions left
+                    if (appear[i])
+                        appear_repetitions--;
+                }
+
+                i++;
+            }
+
+        } while (appear_repetitions > 0);
+    }
+
+    /// <summary>
+    /// Remove the letter that appeared in the door
+    /// </summary>
+    private void removeLetterAtDoor()
+    {
+        // If the letter at the door exists, then destroy
+        if (letterDoor != null)
+            Destroy(letterDoor);
+
+        // The letter is not shown anymore
+        isLetterShownAtDoor = false;
+    }
+
+    /// <summary>
+    /// Remove all letters from the walls
+    /// </summary>
+    private void removeAllLetters()
+    {
+        // If there are letters on the walls
+        if (letters.Count != 0)
+        {
+            // Remove each letters game objects
+            foreach (GameObject go in letters)
+                Destroy(go);
+
+            // Reset letters list to 0
+            letters.Clear();
+        }
+
+        // We don't have any letters on the walls
+        letterCount = 0;
+
+        // Letters aren't created
+        isLettersCreated = false;
     }
 
 }
