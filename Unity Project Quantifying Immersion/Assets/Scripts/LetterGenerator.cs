@@ -44,7 +44,7 @@ public class LetterGenerator : MonoBehaviour {
     public float lettersWallRows = 6;
 
     // The default camouflaged color
-    public Color camouflagedLetterColor = Color.red;
+    public Color unCamouflagedLetterColor = Color.red;
 
     // The default letter color
     public Color normalLetterColor = Color.black;
@@ -101,23 +101,28 @@ public class LetterGenerator : MonoBehaviour {
 
         FOVCanvas.enabled = false;
         /// Instructions
+        /// 
+        /// ---- Log ----
         Debug.Log("Press 'T' to start Task Mode");
         Debug.Log("Press 'Space' to do task example");
         Debug.Log("Press 'C' to camouflage letter");
         Debug.Log("Press 'S' to change the current set of letters");
         Debug.Log("Press 'F' to change the FOV size");
+        Debug.Log("Press 'A' to change letter to appear");
+        /// ---- Log ----
     }
 
     // Update is called once per frame
     void Update () {
+        changeTaskModeInput();
 
-        taskModeInput();
-
-        camouflagedInput();
+        changeCamouflagedInput();
 
         changeSetInput();
 
         changeFOVInput();
+
+        changeAppearingInput();
 
         startTaskInput();
     }
@@ -127,7 +132,7 @@ public class LetterGenerator : MonoBehaviour {
     /// =========================================================
    
     // Select Task Mode 'T'
-    public void taskModeInput()
+    public void changeTaskModeInput()
     {
         // If T key pressed, activate or desactivate Task Mode!
         // Task Mode is where the experiment starts 
@@ -148,19 +153,26 @@ public class LetterGenerator : MonoBehaviour {
                 // The letters are appearing
                 isAppearing = true;
 
+                /// ---- Log ----
                 Debug.Log("Task Disabled");
 
+                /// ---- Log ----
                 Debug.Log("Press 'T' to start Task Mode");
                 Debug.Log("Press 'Space' to do task example");
                 Debug.Log("Press 'C' to camouflage letter");
                 Debug.Log("Press 'S' to change the current set of letters");
+                Debug.Log("Press 'F' to change the FOV size");
+                Debug.Log("Press 'A' to change letter to appear");
+                /// ---- Log ----
             }
             else
             {
+                /// ---- Log ----
                 Debug.Log("Task Enabled");
                 Debug.Log("Press 1 or 2 to Choose Task");
                 Debug.Log("Task 1: Pilot experiment with non-camouflaged letter, repeated " + task1Repetitions + " times");
                 Debug.Log("Task 2: Experiment with camouflaged letters, appearing and not appearing, repeated " + task2Repetitions + " times");
+                /// ---- Log ----
             }
         }
 
@@ -207,13 +219,16 @@ public class LetterGenerator : MonoBehaviour {
     }
 
     // Select Camouflaged or not 'C' Key
-    public void camouflagedInput()
+    public void changeCamouflagedInput()
     {
         // Camouflaged freely if it is not a task mode
         if (Input.GetKeyDown(KeyCode.C) && !isTaskMode)
         {
             isCamouflaged = !isCamouflaged;
+
+            /// ---- Log ----
             Debug.Log("Letter Camouflaged:" + isCamouflaged);
+            /// ---- Log ----
         }
     }
 
@@ -229,7 +244,12 @@ public class LetterGenerator : MonoBehaviour {
             else
                 selectedSet = letters_set1;
 
-            Debug.Log("Selected Set: " + selectedSet.ToString());
+
+            /// ---- Log ----
+            System.Text.StringBuilder sb = new System.Text.StringBuilder("", 50);
+            sb.Append(selectedSet);
+            Debug.Log("Selected Set: " + sb.ToString());
+            /// ---- Log ----
         }
     }
 
@@ -257,7 +277,10 @@ public class LetterGenerator : MonoBehaviour {
                         currentTask = 0;
                         isAppearing = true;
                         isTaskMode = false;
+
+                        /// ---- Log ----
                         Debug.Log("Task Finished!!");
+                        /// ---- Log ----
                     }
                 }
 
@@ -288,8 +311,10 @@ public class LetterGenerator : MonoBehaviour {
                         else
                             isAppearing = true;
 
+                        /// ---- Log ----
                         Debug.Log("Task: " + taskCount);
                         Debug.Log("Is Letter Appearing: " + isAppearing);
+                        /// ---- Log ----
                     }
 
                     // Generate all letters at the room
@@ -306,8 +331,27 @@ public class LetterGenerator : MonoBehaviour {
         if (Input.GetKeyDown(KeyCode.F))
         {
             FOVCanvas.enabled = !FOVCanvas.enabled;
+
+            /// ---- Log ----
+            Debug.Log("FOV Is: " + (FOVCanvas.enabled ? "Enabled" : "Disabled"));
+            /// ---- Log ----
         }
     }
+
+    // Change Appearing 'A' Key
+    public void changeAppearingInput()
+    {
+        // if the F is pressed then change FOV
+        if (Input.GetKeyDown(KeyCode.A))
+        {
+            isAppearing = !isAppearing;
+
+            /// ---- Log ----
+            Debug.Log("Appearing Is: " + (isAppearing ? "Enabled" : "Disabled"));
+            /// ---- Log ----
+        }
+    }
+
 
     /// =========================================================
     /// ============= LETTERS GENERATOR METHODS =================
@@ -325,7 +369,7 @@ public class LetterGenerator : MonoBehaviour {
 
         // If the door is not camouflaged then change of color
         if (!camouflaged)
-            letterDoorText.color = camouflagedLetterColor;
+            letterDoorText.color = unCamouflagedLetterColor;
 
         // Change the text to the desired letter
         letterDoorText.text = letter.ToString();
@@ -584,7 +628,7 @@ public class LetterGenerator : MonoBehaviour {
 
             // If the letter is not camouflaged then 
             if (!camouflaged)
-                letterGO.GetComponent<TextMesh>().color = camouflagedLetterColor;
+                letterGO.GetComponent<TextMesh>().color = unCamouflagedLetterColor;
             else
                 letterGO.GetComponent<TextMesh>().color = normalLetterColor;
         }
