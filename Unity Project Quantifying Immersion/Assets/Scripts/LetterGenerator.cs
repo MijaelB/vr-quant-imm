@@ -89,6 +89,9 @@ public class LetterGenerator : MonoBehaviour {
 
     private bool[] appear;
 
+    private float lastTime = 0;
+    private float deltaTime = 0;
+
     /// =========================================================
     /// ============= UNITY METHODS =============================
     /// =========================================================
@@ -101,7 +104,8 @@ public class LetterGenerator : MonoBehaviour {
 
         FOVCanvas.enabled = false;
         /// Instructions
-        /// 
+        
+
         /// ---- Log ----
         Debug.Log("Press 'T' to start Task Mode");
         Debug.Log("Press 'Space' to do task example");
@@ -284,6 +288,11 @@ public class LetterGenerator : MonoBehaviour {
                     }
                 }
 
+
+                // Store time of the last task
+                deltaTime = Time.realtimeSinceStartup * 1000.0f - lastTime;
+                Debug.Log("Task Time: " + deltaTime + " milliseconds");
+
                 // Remove letters to start again or stop
                 removeAllLetters();
             }
@@ -303,6 +312,9 @@ public class LetterGenerator : MonoBehaviour {
 
                     // Remove letter at the door
                     removeLetterAtDoor();
+
+                    // Store time from the start of the task
+                    lastTime = Time.realtimeSinceStartup * 1000.0f;
 
                     if (isTaskMode)
                     {
@@ -398,7 +410,7 @@ public class LetterGenerator : MonoBehaviour {
         generateRandomLettersAtGround(letter, position, camouflaged, appear, set);
 
         isLettersCreated = true;
-        Debug.Log(letterCount + " letters Created!");
+        ///Debug.Log(letterCount + " letters Created!");
     }
 
 
