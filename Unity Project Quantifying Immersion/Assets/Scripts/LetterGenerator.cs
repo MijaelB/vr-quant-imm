@@ -304,6 +304,10 @@ public class LetterGenerator : MonoBehaviour {
                     // If not then generate a new letter for the task from the selectedSet
                     letter = generateRandomLetter(selectedSet);
 
+                    /// ---- Log ----
+                    Debug.Log("Target Letter: " + letter);
+                    /// ---- Log ----
+                    
                     // Appear the letter at the door
                     showLetterAtDoor(letter, isCamouflaged);
                 }
@@ -498,9 +502,9 @@ public class LetterGenerator : MonoBehaviour {
     /// <param name="ignore"></param>
     private void generateRandomLettersInACircle(int numberOfLetters, Vector3 center, Vector3 upwards, char letter, int atPosition, bool camouflaged, bool appear, char[] set, int[] ignore)
     {
-        float circunference = letterSpaceCircle * numberOfLetters;
-        float radius = circunference / (2 * Mathf.PI);
-        float angleSpace = 2 * Mathf.PI * letterSpaceCircle / circunference;
+        float circumference = letterSpaceCircle * numberOfLetters;
+        float radius = circumference / (2 * Mathf.PI);
+        float angleSpace = 2 * Mathf.PI * letterSpaceCircle / circumference;
 
         for (int i = 0; i < numberOfLetters; i++)
         {
